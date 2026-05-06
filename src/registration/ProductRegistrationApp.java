@@ -1,17 +1,19 @@
 package registration;
 
 import registration.domain.Product;
+import registration.service.ProductService;
 
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ProductRegistrationApp {
     public static void main(String[] args) {
+        ProductService service = new ProductService();
+
         Scanner scanner = new Scanner(System.in);
 
         int option = 0;
 
-        ArrayList<Product> products = new ArrayList<>();
 
         boolean isRunning = true;
 
@@ -20,18 +22,18 @@ public class ProductRegistrationApp {
             option = readOption(scanner);
 
             if (option == 1) {
-                registerProduct(scanner, products);
+                registerProduct(scanner, service);
 
             } else if (option == 2) {
-                listProducts(scanner, products);
+                listProducts(scanner, service);
 
             } else if (option == 3) {
-                searchProduct(scanner, products);
+                searchProduct(scanner, service);
 
             } else if (option == 4) {
-                editProduct(scanner, products);
+                editProduct(scanner, service);
             } else if (option == 5) {
-                deleteProduct(scanner, products);
+                deleteProduct(scanner, service);
             } else if (option == 6) {
                 isRunning = exitMenu(scanner);
             }
@@ -62,20 +64,15 @@ public class ProductRegistrationApp {
         return option;
     }
 
-    private static void registerProduct(Scanner scanner, ArrayList<Product> products) {
+    private static void registerProduct(Scanner scanner, ProductService service) {
         System.out.println("=========== Register Product ===========");
         System.out.println("--------------------------------");
 
 
         System.out.println("Type the product name:");
-        String name = scanner.nextLine();
+        String name = readValidName(scanner);
 
-        while (name.isBlank()) {
-            System.out.println("Invalid name. Type again:");
-            name = scanner.nextLine();
-        }
-
-        if (findProductByName(products, name) != null) {
+        if (service.findByName(name) != null) {
             System.out.println("Product already exists!");
             pause(scanner);
             return;
@@ -98,18 +95,17 @@ public class ProductRegistrationApp {
             quantity = scanner.nextInt();
             scanner.nextLine();
         }
-        products.add(new Product(name, price, quantity));
+        service.addProduct(name, price, quantity);
 
-        System.out.println("Product registered successfully!");
-
-
-        System.out.println(" ");
+        System.out.println("Product successfully registered!");
 
         pause(scanner);
     }
 
-    private static void listProducts(Scanner scanner, ArrayList<Product> products) {
+    private static void listProducts(Scanner scanner, ProductService service) {
         System.out.println("================ PRODUCT LIST ================");
+        var products = service.getAllProducts();
+
         if (products.isEmpty()) {
             System.out.println("No products registered");
             pause(scanner);
@@ -117,6 +113,7 @@ public class ProductRegistrationApp {
         }
 
         System.out.printf("%-20s %-10s %-10s\n", "Name", "Price", "Quantity");
+        System.out.println("---------------------------------------------");
 
         for (Product product : products) {
             System.out.println(product);
@@ -124,25 +121,19 @@ public class ProductRegistrationApp {
         pause(scanner);
     }
 
-    private static void searchProduct(Scanner scanner, ArrayList<Product> products) {
+    private static void searchProduct(Scanner scanner, ProductService service) {
         System.out.println("================ PRODUCT SEARCH ================");
 
-        if (products.isEmpty()) {
+        if (service.isEmpty()) {
             System.out.println("No products to search.");
             pause(scanner);
             return;
         }
 
         System.out.println("Type the product name:");
-        String searchName = scanner.nextLine();
+        String name = readValidName(scanner);
 
-        while (searchName.isBlank()) {
-            System.out.println("Invalid name, type again:");
-            searchName = scanner.nextLine();
-        }
-
-
-        Product product = findProductByName(products, searchName);
+        Product product = service.findByName(name);
 
         if (product != null) {
             System.out.println("Product found:");
@@ -153,17 +144,12 @@ public class ProductRegistrationApp {
         pause(scanner);
     }
 
-    private static void editProduct(Scanner scanner, ArrayList<Product> products) {
+    private static void editProduct(Scanner scanner, ProductService service) {
         System.out.println("================ EDIT PRODUCT ===============");
         System.out.println("Type the product name: ");
-        String name = scanner.nextLine();
+        String name = readValidName(scanner);
 
-        while (name.isBlank()) {
-            System.out.println("Invalid name, type again:");
-            name = scanner.nextLine();
-        }
-
-        Product product = findProductByName(products, name);
+        Product product = service.findByName(name);
 
         if (product == null) {
             System.out.println("Product not found!");
@@ -187,7 +173,6 @@ public class ProductRegistrationApp {
 
         System.out.println("Type the new product quantity: ");
         int quantity = scanner.nextInt();
-        scanner.nextLine();
 
         while (quantity < 0) {
             System.out.println("Invalid quantity, type a number equal or greater than 0:");
@@ -196,26 +181,24 @@ public class ProductRegistrationApp {
 
         scanner.nextLine();
 
-        product.setPrice(price);
-        product.setQuantity(quantity);
+        boolean updated = service.updateProduct(name, price, quantity);
 
-        System.out.println("Product updated successfully!");
+        if (updated) {
+            System.out.println("Product updated successfully!");
+        } else {
+            System.out.println("Product not found!");
+        }
 
         pause(scanner);
     }
 
-    private static void deleteProduct(Scanner scanner, ArrayList<Product> products) {
+    private static void deleteProduct(Scanner scanner, ProductService service) {
         System.out.println("================ DELETE PRODUCT ================");
 
         System.out.println("Type the product name:");
-        String name = scanner.nextLine();
+        String name = readValidName(scanner);
 
-        while (name.isBlank()) {
-            System.out.println("Invalid name, type again:");
-            name = scanner.nextLine();
-        }
-
-        Product product = findProductByName(products, name);
+        Product product = service.findByName(name);
 
         if (product == null) {
             System.out.println("Product not found!");
@@ -225,7 +208,6 @@ public class ProductRegistrationApp {
 
         System.out.println("Product found:");
         System.out.println(product);
-        System.out.println();
 
         System.out.println("Do you want to delete this product? (Y/N)");
         char choice = Character.toLowerCase(scanner.next().charAt(0));
@@ -238,9 +220,14 @@ public class ProductRegistrationApp {
         }
 
         if (choice == 'y') {
-            products.remove(product);
-            System.out.println("Product deleted successfully!");
-        }else {
+            boolean deleted = service.removeProduct(name);
+
+            if (deleted) {
+                System.out.println("Product deleted successfully!");
+            } else {
+                System.out.println("Product not found!");
+            }
+        } else {
             System.out.println("Deletion canceled!");
         }
 
@@ -271,19 +258,20 @@ public class ProductRegistrationApp {
 
     }
 
-    private static Product findProductByName(ArrayList<Product> products, String name) {
-        for (Product product : products) {
-            if (product.getName().equalsIgnoreCase(name)) {
-                return product;
-            }
-        }
-        return null;
-    }
 
     private static void pause(Scanner scanner) {
         System.out.println("Press ENTER to continue:");
         scanner.nextLine();
         System.out.println("\n\n\n\n\n");
+    }
+
+    private static String readValidName(Scanner scanner) {
+        String name = scanner.nextLine();
+        while (name.isBlank()) {
+            System.out.println("Invalid name, type again:");
+            name = scanner.nextLine();
+        }
+        return name;
     }
 
 }
