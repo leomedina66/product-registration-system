@@ -20,6 +20,10 @@ public class Product {
         this.quantity = quantity;
     }
 
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
     public String getName() {
         return name;
     }
