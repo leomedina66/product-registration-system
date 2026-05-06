@@ -1,4 +1,4 @@
-package regristration.domain;
+package registration.domain;
 
 public class Product {
     private String name;

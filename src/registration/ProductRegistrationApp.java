@@ -1,172 +1,144 @@
-package regristration;
+package registration;
 
+import registration.domain.Product;
+
+import java.util.ArrayList;
 import java.util.Scanner;
 
-public class CadastroSimples {
+public class ProductRegistrationApp {
     static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
         int option = 0;
-        String[] nomeProduto = new String[10];
-        double[] valorProduto = new double[10];
-        int[] quantidadeProduto = new int[10];
-        int contadorProdutos = 0;
-        boolean encerrar = false;
 
-        while (!encerrar) {
-            System.out.println("=========== MENU ===========");
-            System.out.println("1 - Cadastrar produto");
-            System.out.println("2 - Listar produtos");
-            System.out.println("3 - Buscar produtos");
-            System.out.println("4 - Sair:");
-            option = scanner.nextInt();
-            scanner.nextLine();
+        ArrayList<Product> products = new ArrayList<>();
 
-            while (option > 4 || option < 1) {
-                System.out.println("Opção inválida, digite um numero correspondente com o menu:");
-                option = scanner.nextInt();
-                scanner.nextLine();
-            }
+        boolean isRunning = true;
+
+        while (isRunning) {
+            showMenu();
+            option = readOption(scanner);
 
             if (option == 1) {
-                System.out.println("=========== CADASTRO ===========");
+                System.out.println("=========== Register Product ===========");
                 System.out.println("--------------------------------");
 
-                if (contadorProdutos < nomeProduto.length) {
 
-                    System.out.println("Digite o nome do produto:");
-                    String nome = scanner.nextLine();
+                System.out.println("Type the product name:");
+                String name = scanner.nextLine();
 
-                    while (nome.trim().isEmpty()) {
-                        System.out.println("Nome inválido. Digite novamente:");
-                        nome = scanner.nextLine();
-                    }
-
-                    nomeProduto[contadorProdutos] = nome;
-
-                    boolean existeProduto = false;
-
-                    for (int i = 0; i < contadorProdutos; i++) {
-                        if (nome.equalsIgnoreCase(nomeProduto[i])) {
-                            existeProduto = true;
-                            break;
-                        }
-                    }
-
-                    if (existeProduto) {
-                        System.out.println("Produto já cadastrado!");
-                    } else {
-
-                        System.out.println("Digite o valor do produto:");
-                        valorProduto[contadorProdutos] = scanner.nextDouble();
-
-                        while (valorProduto[contadorProdutos] <= 0) {
-                            System.out.println("Valor inválido, digite um valor maior que zero:");
-                            valorProduto[contadorProdutos] = scanner.nextDouble();
-                        }
-
-                        System.out.println("Digite quantidade do produto:");
-                        quantidadeProduto[contadorProdutos] = scanner.nextInt();
-                        scanner.nextLine();
-
-                        while (quantidadeProduto[contadorProdutos] < 0) {
-                            System.out.println("Quantidade inválida, digite um numero maior que zero:");
-                            quantidadeProduto[contadorProdutos] = scanner.nextInt();
-                            scanner.nextLine();
-                        }
-
-                        contadorProdutos++;
-                        System.out.println("Produto cadastrado com sucesso!");
-                    }
-
-                } else {
-                    System.out.println("Você já estourou o limite de produtos para cadastro!");
+                while (name.trim().isEmpty()) {
+                    System.out.println("Invalid name. Type again:");
+                    name = scanner.nextLine();
                 }
+
+                boolean productExists = false;
+
+                for (Product product : products) {
+                    if (product.getName().equalsIgnoreCase(name)) {
+                        productExists = true;
+                        break;
+                    }
+                }
+                if (productExists) {
+                    System.out.println("Product already exists.");
+                } else {
+                    System.out.println("Type the product price:");
+                    double price = scanner.nextDouble();
+
+                    while (price < 0) {
+                        System.out.println("Invalid price, type a number equal/greater than 0:");
+                        price = scanner.nextDouble();
+                    }
+
+                    System.out.println("Type the product quantity:");
+                    int quantity = scanner.nextInt();
+                    scanner.nextLine();
+
+                    while (quantity < 0) {
+                        System.out.println("Invalid quantity, type a number equal or greater than 0:");
+                        quantity = scanner.nextInt();
+                        scanner.nextLine();
+                    }
+                    products.add(new Product(name, price, quantity));
+
+                    System.out.println("Product registered successfully!");
+                }
+
 
                 System.out.println(" ");
 
-                System.out.println("Pressione ENTER para continuar:");
+                System.out.println("Press ENTER to continue:");
                 scanner.nextLine();
                 System.out.println("\n\n\n\n\n");
 
             } else if (option == 2) {
-                System.out.println("================ LISTA DE PRODUTOS ================");
-                System.out.printf("%-20s %-10s %-10s\n", "Nome", "Valor", "Quantidade");
-                System.out.println("---------------------------------------------");
-
-                if (contadorProdutos == 0) {
-                    System.out.println("Nenhum produto cadastrado ainda!");
+                System.out.println("================ PRODUCT LIST ================");
+                if (products.isEmpty()) {
+                    System.out.println("No products registered");
                 } else {
-                    for (int i = 0; i < contadorProdutos; i++) {
-                        System.out.printf("%-20s %-10.2f %-10d\n",
-                                nomeProduto[i],
-                                valorProduto[i],
-                                quantidadeProduto[i]);
+                    System.out.printf("%-20s %-10s %-10s\n", "Name", "Price", "Quantity");
+
+                    for (Product product : products) {
+                        System.out.println(product);
                     }
                 }
-
-                System.out.println("Pressione ENTER para continuar:");
+                System.out.println("Press ENTER to continue:");
                 scanner.nextLine();
                 System.out.println("\n\n\n\n\n");
 
             } else if (option == 3) {
-                System.out.println("================ BUSCA DE PRODUTOS ================");
+                System.out.println("================ PRODUCT SEARCH ================");
 
-                if (contadorProdutos > 0) {
+                if (!products.isEmpty()) {
 
-                    System.out.println("Digite o nome do produto:");
-                    String buscaNome = scanner.nextLine();
+                    System.out.println("Type the product name:");
+                    String searchName = scanner.nextLine();
 
-                    boolean produtoEncontrado = false;
+                    boolean producFound = false;
 
-                    for (int i = 0; i < contadorProdutos; i++) {
+                    for (Product product : products) {
 
-                        if (buscaNome.equalsIgnoreCase(nomeProduto[i])) {
+                        if (searchName.equalsIgnoreCase(product.getName())) {
 
-                            System.out.printf("%-20s %-10s %-10s\n", "Nome", "Valor", "Quantidade");
-                            System.out.println("---------------------------------------------");
+                            System.out.println(product);
 
-                            System.out.printf("%-20s %-10.2f %-10d\n",
-                                    nomeProduto[i],
-                                    valorProduto[i],
-                                    quantidadeProduto[i]);
-
-                            produtoEncontrado = true;
+                            producFound = true;
                             break;
                         }
                     }
 
-                    if (!produtoEncontrado) {
-                        System.out.println("Produto não encontrado!");
+                    if (!producFound) {
+                        System.out.println("Product not found!");
                     }
 
                 } else {
-                    System.out.println("Ainda não há produtos cadastrados para procurar");
+                    System.out.println("Don't have products to search!");
                 }
 
-                System.out.println("Pressione ENTER para continuar:");
+                System.out.println("Press ENTER to continue:");
                 scanner.nextLine();
                 System.out.println("\n\n\n\n\n");
 
             } else if (option == 4) {
 
-                System.out.println("================ MENU SAÍDA ================");
-                System.out.println("Você tem certeza que deseja sair do sistema? S/N");
+                System.out.println("================ EXIT MENU ================");
+                System.out.println("Are you sure ? Y/N");
 
                 char confirm = Character.toLowerCase(scanner.next().charAt(0));
 
-                while (confirm != 's' && confirm != 'n') {
-                    System.out.println("Opção inválida, responda apenas com S/N:");
+                while (confirm != 'y' && confirm != 'n') {
+                    System.out.println("Invalid option, reply with Y/N:");
                     confirm = Character.toLowerCase(scanner.next().charAt(0));
                 }
 
-                if (confirm == 's') {
-                    System.out.println("Muito obrigado por usar o Sistema!");
-                    encerrar = true;
+                if (confirm == 'y') {
+                    System.out.println("Thank you for using our registration app!");
+                    isRunning = false;
                 } else {
-                    System.out.println("De volta ao menu principal \n");
+                    System.out.println("Back to main menu \n");
 
-                    System.out.println("Pressione ENTER para continuar:");
+                    System.out.println("Press ENTER to continue:");
                     scanner.nextLine();
                     scanner.nextLine();
                     System.out.println("\n\n\n\n\n");
@@ -175,5 +147,25 @@ public class CadastroSimples {
         }
 
         scanner.close();
+    }
+
+    private static void showMenu() {
+        System.out.println("=========== MENU ===========");
+        System.out.println("1 - Register product");
+        System.out.println("2 - List products");
+        System.out.println("3 - Search products");
+        System.out.println("4 - Exit:");
+    }
+
+    private static int readOption(Scanner scanner) {
+        int option = scanner.nextInt();
+        scanner.nextLine();
+
+        while (option > 4 || option < 1) {
+            System.out.println("Invalid option, type a number between 1 and 4:");
+            option = scanner.nextInt();
+            scanner.nextLine();
+        }
+        return option;
     }
 }
